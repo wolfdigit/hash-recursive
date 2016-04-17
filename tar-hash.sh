@@ -15,6 +15,6 @@ if [ -d "$1" ]; then
         fi
 else
         # hash
-        SIZE=`wc -c "$1"`
+        SIZE=`wc -c "$1" | awk '{ print $1 }'`
         echo `pv -c -N "$1" "$1" | md5sum -b | awk '{ print $1 }'`"\t"$SIZE"\t"$1
 fi
