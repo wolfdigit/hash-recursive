@@ -2,21 +2,26 @@
 IFS=''
 if [ -d "$1" ]; then
         DIR="${1%/}"
-        if [ "x$2" = "xsm" ]; then
-                SIZE=0
-        else
+        if [ "x$2" = "x" ]; then
                 SIZE=`tar c "$DIR" | pv -c -S -s 4G -N "($DIR/)" | wc -c`
+        else
+                if [ "x$2" = "xsm" ]; then
+                        SIZE=0
+                fi
+                if [ "x$2" = "xbg" ]; then
+                        SIZE=4294967296
+                fi
         fi
         if [ "$SIZE" -ge "4294967296" ]; then
                 # recursion
-                ENTRYS=`ls -A -1 "$DIR"`
-                echo -n "$ENTRYS" | while read ENTRY; do
+                ENTRYS=`ls -1 "$DIR"`
+                echo "$ENTRYS" | while read ENTRY; do
                         $0 "$DIR/$ENTRY"
                 done
         else
                 # recursion-hash
                 SUBS=""
-                ENTRYS=`ls -A -1 "$DIR"`
+                ENTRYS=`ls -1 "$DIR"`
                 while read ENTRY; do
                 if [ ! -z "$ENTRY" ]; then
                         SUB1=`$0 "$DIR/$ENTRY" sm`
@@ -37,7 +42,7 @@ if [ -d "$1" ]; then
                         SIZE=`echo $SIZE+$SIZE1 | bc`
                 fi
                 done <<< "$SUBS"
-                echo -e `echo -n "$SUBS" | md5sum -b | awk '{ print $1 }'`"\t"$SIZE"\t"$DIR/
+                echo -e `echo "$SUBS" | md5sum -b | awk '{ print $1 }'`"\t"$SIZE"\t"$DIR/
         fi
 else
         # hash
